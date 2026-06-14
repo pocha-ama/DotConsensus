@@ -121,6 +121,10 @@ def creating_session(subsession):
             for info in answer_sequence:
                 n_red, n_blue, seed = _generate_stimulus(info['answer'], info.get('is_attention', False))
                 group_tasks.append({**info, 'n_red': n_red, 'n_blue': n_blue, 'seed': seed})
+            for order_id, task in enumerate(group_tasks, start=1):
+                task['order_id'] = order_id
+            gkey = f'group_{g.id_in_subsession}_tasks'
+            subsession.session.vars[gkey] = group_tasks
             ## nickname map for chat (rank-based, shuffled each round)
             nickname_maps = [{} for _ in players]
             for task_idx in range(len(group_tasks)):
@@ -128,10 +132,9 @@ def creating_session(subsession):
                 random.shuffle(perm)
                 for rank, pidx in enumerate(perm):
                     nickname_maps[pidx][task_idx] = f'{rank + 1}番さん'
-            for order_id, task in enumerate(group_tasks, start=1):
-                task['order_id'] = order_id
             for i, p in enumerate(players):
-                p.participant.vars['all_tasks'] = group_tasks
+                p.participant.vars['group_task_key'] = gkey
+                p.participant.vars['num_tasks'] = len(group_tasks)
                 p.participant.vars['current_task_index'] = 0
                 p.participant.vars['correct_count'] = 0
                 p.participant.vars['task_correct'] = []
@@ -143,16 +146,20 @@ def creating_session(subsession):
         subsession.group_like_round(1)
 
 # helper functions
+# get the list of all tasks for the player's group
+def _get_tasks(player: Player) -> list:
+    key = player.participant.vars.get('group_task_key', '')
+    return player.session.vars.get(key, [])
+
 # check if the current task is active, practice, and to get the current task info
 def _active(player: Player) -> bool:
-    idx   = player.participant.vars.get('current_task_index', 0)
-    tasks = player.participant.vars.get('all_tasks', [])
-    return idx < len(tasks)
+    idx = player.participant.vars.get('current_task_index', 0)
+    return idx < player.participant.vars.get('num_tasks', 0)
 
 # check if the current task is an attention check
 def _is_practice(player: Player) -> bool:
     idx   = player.participant.vars.get('current_task_index', 0)
-    tasks = player.participant.vars.get('all_tasks', [])
+    tasks = _get_tasks(player)
     return idx < len(tasks) and tasks[idx].get('is_practice', False)
 
 # check if the current task is a new task (not repeated due to lack of consensus in the previous iteration)
@@ -167,7 +174,8 @@ def _is_new_task(player: Player) -> bool:
 # get the current task info as a dict
 def _current_task(player: Player) -> dict:
     idx = player.participant.vars['current_task_index']
-    return player.participant.vars['all_tasks'][idx]
+    tasks = _get_tasks(player)
+    return tasks[idx]
 
 # get the current iteration number for the current task (1, 2, 3, ...)
 def _iteration_num(player: Player) -> int:
