@@ -1,0 +1,249 @@
+{{ block title }}
+先ほどの問題について話し合ってください。
+{{ endblock }}
+
+{{ block styles }}
+<style>
+/* ── 全体：黒背景（Task/Decision との一貫性） ── */
+html, body {
+    background: #000;
+    color: #e8e8e8;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin: 0; padding: 0;
+}
+
+/* ── 判断パネル ── */
+.decisions-panel {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+}
+.decisions-panel h6 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    letter-spacing: .06em;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.choice-badge {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: .06em;
+    padding: 2px 10px;
+    border-radius: 3px;
+    min-width: 52px;
+    text-align: center;
+}
+.badge-red  { color: #ff4444; border: 1px solid #ff444444; }
+.badge-blue { color: #4499ff; border: 1px solid #4499ff44; }
+.badge-miss { color: #555;    border: 1px solid #333; }
+.summary-row { display: flex; gap: 28px; margin-top: 4px; }
+.summary-item { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+
+
+/* ── チャット（oTree 組み込み）を暗いテーマに ── */
+.otree-chat {
+    background: #111 !important;
+    border: 1px solid #2a2a2a !important;
+    border-radius: 6px !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+.otree-chat__messages {
+    background: #0d0d0d !important;
+    height: 240px !important;
+    padding: 10px 12px !important;
+    overflow-x: hidden !important;
+    border-bottom: 1px solid #222 !important;
+}
+.otree-chat__msg { margin-bottom: 8px; }
+.otree-chat__nickname {
+    font-size: 12px !important;
+    color: #4488cc !important;
+    margin-bottom: 2px;
+}
+.otree-chat__body {
+    display: inline-block !important;
+    background: #1a2a3a !important;
+    border: none !important;
+    border-radius: 4px 4px 4px 2px !important;
+    padding: 6px 10px !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    color: #ddd !important;
+    max-width: 80%;
+    word-break: break-word;
+}
+.otree-chat__input-row {
+    display: flex;
+    background: #111 !important;
+    padding: 8px !important;
+    gap: 8px;
+}
+.otree-chat__input {
+    flex: 1 !important;
+    background: #1e1e1e !important;
+    border: 1px solid #333 !important;
+    border-radius: 4px !important;
+    color: #e8e8e8 !important;
+    font-size: 14px !important;
+    padding: 0 10px !important;
+    height: 36px !important;
+    margin: 0 !important;
+    width: auto !important;
+    outline: none;
+}
+.otree-chat__input:focus {
+    border-color: #555 !important;
+}
+.otree-chat__btn-send {
+    background: #1e2a3a !important;
+    border: 1px solid #3355aa !important;
+    border-radius: 4px !important;
+    color: #88aadd !important;
+    font-size: 14px !important;
+    height: 36px !important;
+    padding: 0 16px !important;
+    margin: 0 !important;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.otree-chat__btn-send:hover {
+    background: #243550 !important;
+    color: #aaccff !important;
+}
+
+/* ── タイマー非表示 ── */
+.otree-timer { display: none !important; }
+
+/* ── ニックネーム表示 ── */
+.nickname-line {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 10px;
+}
+.nickname-line strong { color: #aaa; }
+
+/* ── 反復通知 ── */
+.iter-notice {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 12px;
+    text-align: center;
+    letter-spacing: .02em;
+}
+
+/* ── 非アクティブ警告モーダル ── */
+.modal-content  { background-color: #1a1a1a; border-radius: 4px; border: 1px solid #333; }
+.modal-element  { background-color: #1a1a1a; margin-bottom: 4px; border-radius: 4px 4px 0 0; }
+.modal-value    { font-size: 12px; float: left; margin-top: 11px; color: #bbb; }
+.bi-info-circle-fill { color: #4488cc; float: left; margin: 11px 11px 11px 15px; }
+.bi-x { color: #666; float: left; margin: 11px 0 0 38px; cursor: pointer; }
+</style>
+{{ endblock }}
+
+{{ block content }}
+<body oncontextmenu="return false;">
+
+<input type="hidden" id="my-nickname" value="{{ nickname }}">
+
+<!-- 非アクティブ警告モーダル -->
+<div class="modal fade bd-example-modal-sm" id="myModal" tabindex="-1" role="dialog" aria-hidden="true" style="display:none;">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-element">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                </svg>
+                <div class="modal-value">もっと活発に話し合いましょう！</div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 意見分布（集計のみ） -->
+<div class="decisions-panel">
+    <h6>あなたは
+        {% if my_choice == "red" %}
+            <span class="choice-badge badge-red">RED</span>
+        {% elif my_choice == "blue" %}
+            <span class="choice-badge badge-blue">BLUE</span>
+        {% else %}
+            <span class="choice-badge badge-miss">—</span>
+        {% endif %}
+        を選択しました。</h6>
+    <h6>あなたを含めた5人の意見は以下のとおりです。</h6>
+    <div class="summary-row">
+        <div class="summary-item">
+            <span class="choice-badge badge-red">RED</span>
+            <strong>{{ count_red }}人</strong>
+        </div>
+        <div class="summary-item">
+            <span class="choice-badge badge-blue">BLUE</span>
+            <strong>{{ count_blue }}人</strong>
+        </div>
+    </div>
+</div>
+
+<!-- ② チャット -->
+<div class="nickname-line">
+    あなたのニックネーム：<strong>{{ nickname }}</strong>
+</div>
+
+{{ chat nickname=nickname }}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+{{ endblock }}
+
+{{ block scripts }}
+<script>
+    /* Enter キーでのフォーム送信を防止 */
+    const chatInput = document.querySelector('.otree-chat__input');
+    if (chatInput) {
+        chatInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); }
+        });
+    }
+
+    /* 非アクティブ警告：60 秒間入力がなければモーダルを表示 */
+    let id_announce;
+    let isSet = false;
+    const id_patrol = setInterval(patrol, 2000);
+
+    function patrol() {
+        const input = document.querySelector('.otree-chat__input');
+        if (!input) return;
+        if (input.value === '' && !isSet) {
+            id_announce = setTimeout(announce, 60000);
+            isSet = true;
+        } else if (input.value !== '') {
+            clearTimeout(id_announce);
+            isSet = false;
+        }
+    }
+
+    function announce() {
+        $('#myModal').modal('show');
+        $('#myModal').on('hidden.bs.modal', () => { isSet = false; });
+    }
+
+    const xBtn = document.querySelector('.bi-x');
+    if (xBtn) {
+        xBtn.addEventListener('click', () => {
+            $('#myModal').modal('hide');
+            isSet = false;
+        });
+    }
+</script>
+{{ endblock }}

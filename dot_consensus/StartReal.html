@@ -1,0 +1,34 @@
+{{ block title }}
+    {% if is_practice_ending %}
+    本番問題(第{{ task_num }}問)の開始
+    {% else %}
+    第{{ task_num }}問の開始
+    {% endif %}
+{{ endblock }}
+
+{{ block styles }}
+    {{ include C.MAIN_TEMPLATE }}
+{{ endblock }}
+
+{{ block content }}
+    {% if is_practice_ending %}
+    <p>以上で練習問題は終了です。次のページから、本番の問題（第{{ task_num }}問；全{{ num_real }}問）が始まります。</p>
+    {% else %}
+    <p>これから、第{{ task_num }}問（全{{ num_real }}問）を始めます。</p>
+    {% endif %}
+    <br>
+    <p><b>準備ができたら、スペースキーを押して問題を開始してください。</b></p>
+{{ endblock }}
+
+{{ block scripts }}
+    <script type="text/javascript" src="{{ static 'dot_consensus/js/my_functions.js'}}"></script>
+    <script>
+        document.addEventListener('keypress', keypress_event);
+        function keypress_event(e) {
+            if (e.code === 'Space') {
+                next_after(0);
+            }
+            return false;
+        }
+    </script>
+{{ endblock }}

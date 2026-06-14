@@ -1,0 +1,30 @@
+{{ block title }}実験問題の終了{{ endblock }}
+
+{{ block styles }}
+    {{ include C.MAIN_TEMPLATE }}
+{{ endblock }}
+
+{{ block content }}
+<body oncontextmenu="return false;">
+
+<div style="text-align:center; padding:20px 0;">
+    <h3>これで全ての問題は終了です</h3>
+</div>
+
+<div style="background:#f8f8f8; border-radius:8px; padding:20px 24px; margin:16px 0;">
+    <p style="font-size:18px; margin:0;">
+        全 <strong>{{ total_questions }}</strong> 問中
+        <strong style="font-size:24px; color:#27ae60;">{{ correct_count }}</strong> 問
+        グループで正解しました。
+    </p>
+    <p>
+        あなたが獲得した金額は
+        <strong style="font-size:24px; color:#27ae60;">{{ reward }}</strong> 円
+        です。
+    </p>
+</div>
+
+<button type="submit" class="btn btn-primary">次へ</button>
+
+</body>
+{{ endblock }}

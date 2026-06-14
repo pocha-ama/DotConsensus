@@ -1,0 +1,31 @@
+{{ block title }}
+    練習問題
+{{ endblock }}
+
+{{ block styles }}
+    {{ include C.MAIN_TEMPLATE }}
+{{ endblock }}
+
+{{ block content }}
+    <p>実験課題とチャットを理解してもらうために、これから練習問題を1問行います。</p>
+    <ul>
+        <li>練習問題での正誤は、本日の報酬にはカウントされません。</li>
+        <li>2分経過したら自動的にチャットは終了します。</li>
+        <li>練習することが目的なので、自由に書き込んでください。</li>
+    </ul>
+    <br>
+    <p><b>準備ができたら、スペースキーを押して練習問題を開始してください。</b></p>
+{{ endblock }}
+
+{{ block scripts }}
+    <script type="text/javascript" src="{{ static 'dot_consensus/js/my_functions.js'}}"></script>
+    <script>
+        document.addEventListener('keypress', keypress_event);
+        function keypress_event(e) {
+            if (e.code === 'Space') {
+                next_after(0);
+            }
+            return false;
+        }
+    </script>
+{{ endblock }}

@@ -1,0 +1,222 @@
+{{ block styles }}
+<style>
+html, body {
+    background: #000;
+    color: #e8e8e8;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin: 0; padding: 0;
+}
+.page-wrapper {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+    z-index: 9999;
+}
+
+/* ── 判断①の参照表示 ── */
+.d1-reference {
+    font-size: 13px;
+    color: #777;
+    margin-bottom: 36px;
+    text-align: center;
+}
+.d1-reference .ref-badge {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 2px 10px;
+    border-radius: 3px;
+    letter-spacing: .04em;
+    vertical-align: middle;
+}
+.ref-red  { color: #ff4444; border: 1px solid #ff444455; }
+.ref-blue { color: #4499ff; border: 1px solid #4499ff55; }
+
+/* ── 問いかけ ── */
+.question-text {
+    font-size: 18px;
+    color: #ccc;
+    margin-bottom: 40px;
+    text-align: center;
+    letter-spacing: .03em;
+    max-width: 520px;
+    line-height: 1.6;
+}
+
+/* ── 選択ボタン ── */
+.choice-row {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 56px;
+}
+.choice-btn {
+    width: 160px;
+    height: 80px;
+    border: 2px solid #444;
+    border-radius: 6px;
+    background: #111;
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: .08em;
+    cursor: pointer;
+    transition: border-color .12s, background .12s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+.choice-btn:hover { background: #1e1e1e; border-color: #777; }
+.btn-red  { color: #ff4444; }
+.btn-blue { color: #4499ff; }
+.btn-red.selected  { border-color: #ff4444; background: #1a0000; }
+.btn-blue.selected { border-color: #4499ff; background: #00091a; }
+
+/* ── 確信度 ── */
+.conf-section {
+    width: 100%;
+    max-width: 640px;
+    text-align: center;
+}
+.conf-label {
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 14px;
+    letter-spacing: .02em;
+}
+.conf-row {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+.conf-btn {
+    width: 48px;
+    height: 48px;
+    border: 2px solid #444;
+    border-radius: 4px;
+    background: #111;
+    color: #bbb;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: border-color .1s, background .1s, color .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+.conf-btn:hover { border-color: #888; color: #eee; }
+.conf-btn.selected { border-color: #e8e8e8; background: #2a2a2a; color: #fff; }
+.conf-endpoints {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #666;
+    margin-top: 6px;
+    padding: 0 4px;
+}
+
+/* ── 送信ボタン ── */
+.submit-row { margin-top: 48px; }
+.submit-btn {
+    padding: 14px 48px;
+    font-size: 15px;
+    background: #222;
+    color: #888;
+    border: 2px solid #444;
+    border-radius: 4px;
+    cursor: not-allowed;
+    letter-spacing: .04em;
+    transition: background .15s, color .15s, border-color .15s;
+}
+.submit-btn:not(:disabled) { color: #fff; border-color: #aaa; cursor: pointer; }
+.submit-btn:not(:disabled):hover { background: #333; border-color: #ddd; }
+</style>
+{{ endblock }}
+
+{{ block content }}
+<body oncontextmenu="return false;">
+<div class="page-wrapper">
+    <div class="question-text">
+        現在のあなたの意見を教えてください。
+    </div>
+
+    <form method="post" id="decision2-form">
+        <div class="choice-row">
+            {% if color_pos == "redblue" %}
+            <div class="choice-btn btn-red" id="btn2-red"
+                 onclick="selectChoice2('red')">RED</div>
+            <div class="choice-btn btn-blue" id="btn2-blue"
+                 onclick="selectChoice2('blue')">BLUE</div>
+            {% else %}
+            <div class="choice-btn btn-blue" id="btn2-blue"
+                 onclick="selectChoice2('blue')">BLUE</div>
+            <div class="choice-btn btn-red" id="btn2-red"
+                 onclick="selectChoice2('red')">RED</div>
+            {% endif %}
+        </div>
+        <input type="hidden" name="decision2_choice" id="id_decision2_choice" value="">
+        <input type="hidden" name="decision2_rt_ms"  id="id_decision2_rt_ms"  value="">
+
+        <div class="conf-section">
+            <div class="conf-label">この判断に対する確信度はどのくらいですか？</div>
+            <div class="conf-row" id="conf-row2">
+                {% for i in "0123456789" %}
+                <div class="conf-btn" id="conf2_{{ forloop.counter0 }}"
+                     onclick="selectConf2({{ forloop.counter0 }})">{{ forloop.counter0 }}</div>
+                {% endfor %}
+                <div class="conf-btn" id="conf2_10" onclick="selectConf2(10)">10</div>
+            </div>
+            <input type="hidden" name="decision2_confidence" id="id_decision2_confidence" value="">
+            <div class="conf-endpoints">
+                <span>まったく自信がない</span>
+                <span>非常に自信がある</span>
+            </div>
+        </div>
+
+        <div class="submit-row">
+            <button type="submit" id="submit2-btn" class="submit-btn" disabled>次へ</button>
+        </div>
+    </form>
+
+</div>
+
+<script>
+const pageStart2 = performance.now();
+let choice2Done = false, conf2Done = false;
+
+function selectChoice2(color) {
+    document.getElementById('id_decision2_choice').value = color;
+    document.getElementById('btn2-red').classList.remove('selected');
+    document.getElementById('btn2-blue').classList.remove('selected');
+    document.getElementById('btn2-' + color).classList.add('selected');
+    choice2Done = true;
+    maybeEnable2();
+}
+
+function selectConf2(val) {
+    document.getElementById('id_decision2_confidence').value = val;
+    document.querySelectorAll('#conf-row2 .conf-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('conf2_' + val).classList.add('selected');
+    conf2Done = true;
+    maybeEnable2();
+}
+
+function maybeEnable2() {
+    const btn = document.getElementById('submit2-btn');
+    if (choice2Done && conf2Done) { btn.disabled = false; }
+}
+
+document.getElementById('decision2-form').addEventListener('submit', function () {
+    document.getElementById('id_decision2_rt_ms').value =
+        Math.round(performance.now() - pageStart2);
+});
+</script>
+</body>
+{{ endblock }}

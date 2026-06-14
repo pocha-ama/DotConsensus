@@ -1,0 +1,17 @@
+{{ block title }}
+    お願い
+{{ endblock }}
+
+{{ block styles }}
+    {{ include C.MAIN_TEMPLATE }}
+{{ endblock }}
+
+{{ block content }}
+    <ul>
+        <li>お使いのブラウザで全画面表示モードをオンにしてください。</li>
+        <li>実験中はブラウザを全画面表示モードのままにしてください。</li>
+    </ul>
+    <br>
+    <p>全画面表示モードをオンにしたら、下のボタンをクリックして次のページに進んでください。</p>
+    {{ next_button }}
+{{ endblock }}

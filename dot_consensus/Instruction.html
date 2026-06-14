@@ -1,0 +1,191 @@
+{{ block title }}
+    実験の説明
+{{ endblock }}
+
+{{ block styles }}
+    {{ include C.MAIN_TEMPLATE }}
+{{ endblock }}
+
+{{ block content }}
+    <p>はじめに、実験の説明をお読みください。</p>
+    <p>実験内容を理解したら、下の青いボタンをクリックしてください。</p>
+    <p>【注意】</p>
+    <ul>
+        <li>説明の画像の読み込みに時間がかかる場合があります。</li>
+        <li>ページが更新されない場合は、画像をクリックしてから、左右の矢印キーを押してください。</li>
+    </ul>
+    <br>
+    <div id='display_jspsych'></div>
+    <br><br><br>
+    <div id="next_button"><button class="otree-btn-next btn btn-primary" disabled="disabled">実験内容を理解しました</div>
+{{ endblock }}
+
+{{ block scripts }}
+    <script type="text/javascript" src='{{ static "dot_consensus/js/my_functions.js" }}'></script>
+
+    <script src="https://unpkg.com/jspsych@7.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-image-keyboard-response@1.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@1.0.0"></script>
+    <link href="https://unpkg.com/jspsych@7.0.0/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="{{ static 'dot_consensus/js/my_functions.js' }}"></script>
+    <script type="text/javascript" src="{{ static 'dot_consensus/js/@jspsych/plugin-instructions/dist/index.browser.js' }}"></script>
+    <script>
+
+    /* initialize jsPsych */
+    var jsPsych = initJsPsych({display_element: 'display_jspsych',});
+
+    /* create timeline */
+    var timeline = [];
+
+    if (js_vars.color_pos === "redblue") {
+        files = [
+            "/static/dot_2/inst/phase1_redblue/inst_1.png",
+            "/static/dot_2/inst/phase1_redblue/inst_2.png",
+            "/static/dot_2/inst/phase1_redblue/inst_3.png",
+            "/static/dot_2/inst/phase1_redblue/inst_4.png",
+            "/static/dot_2/inst/redblue.gif",
+            "/static/dot_2/inst/phase1_redblue/inst_5.png",
+            "/static/dot_2/inst/phase1_redblue/inst_6.png",
+            "/static/dot_2/inst/phase1_redblue/inst_7.png",
+            "/static/dot_2/inst/phase1_redblue/inst_8.png",
+            "/static/dot_2/inst/phase1_redblue/inst_9.png",
+            "/static/dot_2/inst/phase1_redblue/inst_10.png",
+            "/static/dot_2/inst/phase1_redblue/inst_11.png",
+            "/static/dot_2/inst/phase1_redblue/inst_12.png",
+            "/static/dot_2/inst/phase1_redblue/inst_13.png",
+            "/static/dot_2/inst/phase1_redblue/inst_14.png",
+            "/static/dot_2/inst/phase1_redblue/inst_15.png",
+            "/static/dot_2/inst/phase1_redblue/inst_16.png",
+            "/static/dot_2/inst/phase1_redblue/inst_17.png",
+            "/static/dot_2/inst/phase1_redblue/inst_18.png",
+            "/static/dot_2/inst/phase1_redblue/inst_19.png",
+            "/static/dot_2/inst/phase1_redblue/inst_20.png",
+            "/static/dot_2/inst/phase1_redblue/inst_21.png",
+            "/static/dot_2/inst/phase1_redblue/inst_22.png",
+            "/static/dot_2/inst/phase1_redblue/inst_23.png",
+            "/static/dot_2/inst/phase1_redblue/inst_24.png",
+            "/static/dot_2/inst/phase1_redblue/inst_25.png",
+        ];
+
+        pages = [
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_1.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_2.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_3.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_4.png"></img><br><br><img src="/static/dot_2/inst/redblue.gif"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_5.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_6.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_7.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_8.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_9.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_10.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_11.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_12.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_13.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_14.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_15.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_16.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_17.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_18.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_19.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_20.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_21.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_22.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_23.png"></img>`,
+            `<img src="/static/dot_2/inst/phase1_redblue/inst_24.png"></img>`,
+            `<img id="last_page" src="/static/dot_2/inst/phase1_redblue/inst_25.png"></img>`,
+        ];
+    } else {
+      files = [
+        "/static/dot_2/inst/phase1_bluered/inst_1.png",
+        "/static/dot_2/inst/phase1_bluered/inst_2.png",
+        "/static/dot_2/inst/phase1_bluered/inst_3.png",
+        "/static/dot_2/inst/phase1_bluered/inst_4.png",
+        "/static/dot_2/inst/bluered.gif",
+        "/static/dot_2/inst/phase1_bluered/inst_5.png",
+        "/static/dot_2/inst/phase1_bluered/inst_6.png",
+        "/static/dot_2/inst/phase1_bluered/inst_7.png",
+        "/static/dot_2/inst/phase1_bluered/inst_8.png",
+        "/static/dot_2/inst/phase1_bluered/inst_9.png",
+        "/static/dot_2/inst/phase1_bluered/inst_10.png",
+        "/static/dot_2/inst/phase1_bluered/inst_11.png",
+        "/static/dot_2/inst/phase1_bluered/inst_12.png",
+        "/static/dot_2/inst/phase1_bluered/inst_13.png",
+        "/static/dot_2/inst/phase1_bluered/inst_14.png",
+        "/static/dot_2/inst/phase1_bluered/inst_15.png",
+        "/static/dot_2/inst/phase1_bluered/inst_16.png",
+        "/static/dot_2/inst/phase1_bluered/inst_17.png",
+        "/static/dot_2/inst/phase1_bluered/inst_18.png",
+        "/static/dot_2/inst/phase1_bluered/inst_19.png",
+        "/static/dot_2/inst/phase1_bluered/inst_20.png",
+        "/static/dot_2/inst/phase1_bluered/inst_21.png",
+        "/static/dot_2/inst/phase1_bluered/inst_22.png",
+        "/static/dot_2/inst/phase1_bluered/inst_23.png",
+        "/static/dot_2/inst/phase1_bluered/inst_24.png",
+        "/static/dot_2/inst/phase1_bluered/inst_25.png"
+      ];
+
+      pages = [
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_1.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_2.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_3.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_4.png"></img><br><br><img src="/static/dot_2/inst/bluered.gif"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_5.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_6.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_7.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_8.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_9.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_10.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_11.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_12.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_13.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_14.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_15.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_16.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_17.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_18.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_19.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_20.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_21.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_22.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_23.png"></img>`,
+        `<img src="/static/dot_2/inst/phase1_bluered/inst_24.png"></img>`,
+        `<img id="last_page" src="/static/dot_2/inst/phase1_bluered/inst_25.png"></img>`,
+      ];
+    }
+
+    var preload = {
+      type: jsPsychPreload,
+      images: files,
+      show_progress_bar: true,
+      auto_preload: true,
+    }
+
+    timeline.push(preload);
+
+    var trial = {
+      type: jsPsychInstructions,
+      pages: pages,
+      show_page_number: true,
+      allow_keys: true,
+    }
+
+    timeline.push(trial);
+
+    /* start the experiment */
+    jsPsych.run(timeline);
+
+    function keyPressEvent(e) {
+      if (e.code === "ArrowRight") {
+        let elem = document.getElementById("last_page");
+        console.log(elem);
+        if (elem != null) {
+          document.getElementById("next_button").innerHTML = `<button class="otree-btn-next btn btn-primary">I have understood the instructions and will continue with the quiz</button>`;
+        }
+      }
+    }
+
+    document.body.addEventListener("keydown", keyPressEvent);
+
+  </script>
+{{ endblock }}
