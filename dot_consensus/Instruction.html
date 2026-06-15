@@ -4,6 +4,23 @@
 
 {{ block styles }}
     {{ include C.MAIN_TEMPLATE }}
+    <style>
+      #display_jspsych img {
+          max-width:  min(100%, 960px);
+          max-height: calc(100vh - 220px);
+          width:  auto;
+          height: auto;
+          display: block;
+          margin: 0 auto;
+          object-fit: contain;
+      }
+      #jspsych-content,
+      .jspsych-display-element,
+      #display_jspsych {
+          max-width: 100% !important;
+          box-sizing: border-box;
+      }
+      </style>
 {{ endblock }}
 
 {{ block content }}
@@ -38,121 +55,60 @@
     /* create timeline */
     var timeline = [];
 
-    if (js_vars.color_pos === "redblue") {
-        files = [
-            "/static/dot_2/inst/phase1_redblue/inst_1.png",
-            "/static/dot_2/inst/phase1_redblue/inst_2.png",
-            "/static/dot_2/inst/phase1_redblue/inst_3.png",
-            "/static/dot_2/inst/phase1_redblue/inst_4.png",
-            "/static/dot_2/inst/redblue.gif",
-            "/static/dot_2/inst/phase1_redblue/inst_5.png",
-            "/static/dot_2/inst/phase1_redblue/inst_6.png",
-            "/static/dot_2/inst/phase1_redblue/inst_7.png",
-            "/static/dot_2/inst/phase1_redblue/inst_8.png",
-            "/static/dot_2/inst/phase1_redblue/inst_9.png",
-            "/static/dot_2/inst/phase1_redblue/inst_10.png",
-            "/static/dot_2/inst/phase1_redblue/inst_11.png",
-            "/static/dot_2/inst/phase1_redblue/inst_12.png",
-            "/static/dot_2/inst/phase1_redblue/inst_13.png",
-            "/static/dot_2/inst/phase1_redblue/inst_14.png",
-            "/static/dot_2/inst/phase1_redblue/inst_15.png",
-            "/static/dot_2/inst/phase1_redblue/inst_16.png",
-            "/static/dot_2/inst/phase1_redblue/inst_17.png",
-            "/static/dot_2/inst/phase1_redblue/inst_18.png",
-            "/static/dot_2/inst/phase1_redblue/inst_19.png",
-            "/static/dot_2/inst/phase1_redblue/inst_20.png",
-            "/static/dot_2/inst/phase1_redblue/inst_21.png",
-            "/static/dot_2/inst/phase1_redblue/inst_22.png",
-            "/static/dot_2/inst/phase1_redblue/inst_23.png",
-            "/static/dot_2/inst/phase1_redblue/inst_24.png",
-            "/static/dot_2/inst/phase1_redblue/inst_25.png",
-        ];
+    files = [
+        "/static/inst/inst_1.jpg",
+        "/static/inst/inst_2.jpg",
+        "/static/inst/inst_3.jpg",
+        "/static/inst/dot.gif",
+        "/static/inst/inst_4.jpg",
+        "/static/inst/inst_5.jpg",
+        "/static/inst/inst_6.jpg",
+        "/static/inst/inst_7.jpg",
+        "/static/inst/inst_8.jpg",
+        "/static/inst/inst_9.jpg",
+        "/static/inst/inst_10.jpg",
+        "/static/inst/inst_11.jpg",
+        "/static/inst/inst_12.jpg",
+        "/static/inst/inst_13.jpg",
+        "/static/inst/inst_14.jpg",
+        "/static/inst/inst_15.jpg",
+        "/static/inst/inst_16.jpg",
+        "/static/inst/inst_17.jpg",
+        "/static/inst/inst_18.jpg",
+        "/static/inst/inst_19.jpg",
+        "/static/inst/inst_20.jpg",
+        "/static/inst/inst_21.jpg",
+        "/static/inst/inst_22.jpg",
+        "/static/inst/inst_23.jpg",
+        "/static/inst/inst_24.jpg",
+    ];
 
-        pages = [
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_1.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_2.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_3.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_4.png"></img><br><br><img src="/static/dot_2/inst/redblue.gif"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_5.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_6.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_7.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_8.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_9.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_10.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_11.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_12.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_13.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_14.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_15.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_16.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_17.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_18.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_19.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_20.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_21.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_22.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_23.png"></img>`,
-            `<img src="/static/dot_2/inst/phase1_redblue/inst_24.png"></img>`,
-            `<img id="last_page" src="/static/dot_2/inst/phase1_redblue/inst_25.png"></img>`,
-        ];
-    } else {
-      files = [
-        "/static/dot_2/inst/phase1_bluered/inst_1.png",
-        "/static/dot_2/inst/phase1_bluered/inst_2.png",
-        "/static/dot_2/inst/phase1_bluered/inst_3.png",
-        "/static/dot_2/inst/phase1_bluered/inst_4.png",
-        "/static/dot_2/inst/bluered.gif",
-        "/static/dot_2/inst/phase1_bluered/inst_5.png",
-        "/static/dot_2/inst/phase1_bluered/inst_6.png",
-        "/static/dot_2/inst/phase1_bluered/inst_7.png",
-        "/static/dot_2/inst/phase1_bluered/inst_8.png",
-        "/static/dot_2/inst/phase1_bluered/inst_9.png",
-        "/static/dot_2/inst/phase1_bluered/inst_10.png",
-        "/static/dot_2/inst/phase1_bluered/inst_11.png",
-        "/static/dot_2/inst/phase1_bluered/inst_12.png",
-        "/static/dot_2/inst/phase1_bluered/inst_13.png",
-        "/static/dot_2/inst/phase1_bluered/inst_14.png",
-        "/static/dot_2/inst/phase1_bluered/inst_15.png",
-        "/static/dot_2/inst/phase1_bluered/inst_16.png",
-        "/static/dot_2/inst/phase1_bluered/inst_17.png",
-        "/static/dot_2/inst/phase1_bluered/inst_18.png",
-        "/static/dot_2/inst/phase1_bluered/inst_19.png",
-        "/static/dot_2/inst/phase1_bluered/inst_20.png",
-        "/static/dot_2/inst/phase1_bluered/inst_21.png",
-        "/static/dot_2/inst/phase1_bluered/inst_22.png",
-        "/static/dot_2/inst/phase1_bluered/inst_23.png",
-        "/static/dot_2/inst/phase1_bluered/inst_24.png",
-        "/static/dot_2/inst/phase1_bluered/inst_25.png"
-      ];
-
-      pages = [
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_1.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_2.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_3.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_4.png"></img><br><br><img src="/static/dot_2/inst/bluered.gif"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_5.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_6.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_7.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_8.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_9.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_10.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_11.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_12.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_13.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_14.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_15.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_16.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_17.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_18.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_19.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_20.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_21.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_22.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_23.png"></img>`,
-        `<img src="/static/dot_2/inst/phase1_bluered/inst_24.png"></img>`,
-        `<img id="last_page" src="/static/dot_2/inst/phase1_bluered/inst_25.png"></img>`,
-      ];
-    }
+    pages = [
+        `<img src="/static/inst/inst_1.jpg"></img>`,
+        `<img src="/static/inst/inst_2.jpg"></img>`,
+        `<img src="/static/inst/inst_3.jpg"></img><br><br><img src="/static/inst/dot.gif"></img>`,
+        `<img src="/static/inst/inst_4.jpg"></img>`,
+        `<img src="/static/inst/inst_5.jpg"></img>`,
+        `<img src="/static/inst/inst_6.jpg"></img>`,
+        `<img src="/static/inst/inst_7.jpg"></img>`,
+        `<img src="/static/inst/inst_8.jpg"></img>`,
+        `<img src="/static/inst/inst_9.jpg"></img>`,
+        `<img src="/static/inst/inst_10.jpg"></img>`,
+        `<img src="/static/inst/inst_11.jpg"></img>`,
+        `<img src="/static/inst/inst_12.jpg"></img>`,
+        `<img src="/static/inst/inst_13.jpg"></img>`,
+        `<img src="/static/inst/inst_14.jpg"></img>`,
+        `<img src="/static/inst/inst_15.jpg"></img>`,
+        `<img src="/static/inst/inst_16.jpg"></img>`,
+        `<img src="/static/inst/inst_17.jpg"></img>`,
+        `<img src="/static/inst/inst_18.jpg"></img>`,
+        `<img src="/static/inst/inst_19.jpg"></img>`,
+        `<img src="/static/inst/inst_20.jpg"></img>`,
+        `<img src="/static/inst/inst_21.jpg"></img>`,
+        `<img src="/static/inst/inst_22.jpg"></img>`,
+        `<img src="/static/inst/inst_23.jpg"></img>`,
+        `<img id="last_page" src="/static/inst/inst_24.jpg"></img>`,
+    ];
 
     var preload = {
       type: jsPsychPreload,
@@ -180,7 +136,7 @@
         let elem = document.getElementById("last_page");
         console.log(elem);
         if (elem != null) {
-          document.getElementById("next_button").innerHTML = `<button class="otree-btn-next btn btn-primary">I have understood the instructions and will continue with the quiz</button>`;
+          document.getElementById("next_button").innerHTML = `<button class="otree-btn-next btn btn-primary">実験内容を理解しました</button>`;
         }
       }
     }

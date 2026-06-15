@@ -495,7 +495,8 @@ class Finish(Page):
 # This is the entire app
 page_sequence = [
     Fullscreen,
-    # Instruction,
+    Instruction,
+    Wait_Instruction,
     StartPractice,
     Task,
     Decision1,
