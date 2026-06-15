@@ -170,7 +170,7 @@ html, body {
 
         <!-- 確信度 0–10 -->
         <div class="conf-section">
-            <div class="conf-label">この判断に対する確信度はどのくらいですか？</div>
+            <div class="conf-label">その判断にどのくらい自信がありますか？</div>
             <div class="conf-row" id="conf-row">
                 {% for i in "0123456789" %}
                 <div class="conf-btn" id="conf1_{{ forloop.counter0 }}" onclick="selectConf({{ forloop.counter0 }})">{{ forloop.counter0 }}</div>
