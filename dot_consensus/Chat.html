@@ -41,8 +41,28 @@ html, body {
 .badge-red  { color: #ff4444; border: 1px solid #ff444444; }
 .badge-blue { color: #4499ff; border: 1px solid #4499ff44; }
 .badge-miss { color: #555;    border: 1px solid #333; }
+.badge-neutral { color: #ddd; border: 1px solid #555; }
 .summary-row { display: flex; gap: 28px; margin-top: 4px; }
 .summary-item { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+
+/* ── 刺激参照ボタン ── */
+.review-row { margin: 0 0 18px; text-align: center; }
+.review-btn {
+    background: #1e2a3a; border: 1px solid #3355aa; border-radius: 4px;
+    color: #88aadd; font-size: 14px; padding: 8px 18px; cursor: pointer;
+    letter-spacing: .03em;
+}
+.review-btn:hover { background: #243550; color: #aaccff; }
+/* 刺激参照モーダル（黒背景・大きめ） */
+#reviewModal .modal-content {
+    background: #000; border: 1px solid #333; border-radius: 6px;
+}
+#reviewModal .modal-header { border-bottom: 1px solid #222; padding: 10px 16px; }
+#reviewModal .modal-title { color: #aaa; font-size: 14px; }
+#reviewModal .close { color: #888; opacity: 1; text-shadow: none; }
+#review-canvas-wrap {
+    position: relative; width: 100%; height: 480px; background: #000;
+}
 
 
 /* ── チャット（oTree 組み込み）を暗いテーマに ── */
@@ -172,26 +192,59 @@ html, body {
 <!-- 意見分布（集計のみ） -->
 <div class="decisions-panel">
     <h6>あなたは
-        {% if my_choice == "red" %}
-            <span class="choice-badge badge-red">RED</span>
-        {% elif my_choice == "blue" %}
-            <span class="choice-badge badge-blue">BLUE</span>
+        {% if choice_type == "redblue" %}
+            {% if my_choice == "red" %}<span class="choice-badge badge-red">RED</span>
+            {% elif my_choice == "blue" %}<span class="choice-badge badge-blue">BLUE</span>
+            {% else %}<span class="choice-badge badge-miss">—</span>{% endif %}
         {% else %}
-            <span class="choice-badge badge-miss">—</span>
+            {% if my_choice %}<span class="choice-badge badge-neutral">{{ my_choice_label }}</span>
+            {% else %}<span class="choice-badge badge-miss">—</span>{% endif %}
         {% endif %}
         を選択しました。</h6>
     <h6>あなたを含めた5人の意見は以下のとおりです。</h6>
     <div class="summary-row">
         <div class="summary-item">
-            <span class="choice-badge badge-red">RED</span>
-            <strong>{{ count_red }}人</strong>
+            {% if choice_type == "redblue" %}
+            <span class="choice-badge badge-red">{{ opt_a_label }}</span>
+            {% else %}
+            <span class="choice-badge badge-neutral">{{ opt_a_label }}</span>
+            {% endif %}
+            <strong>{{ count_a }}人</strong>
         </div>
         <div class="summary-item">
-            <span class="choice-badge badge-blue">BLUE</span>
-            <strong>{{ count_blue }}人</strong>
+            {% if choice_type == "redblue" %}
+            <span class="choice-badge badge-blue">{{ opt_b_label }}</span>
+            {% else %}
+            <span class="choice-badge badge-neutral">{{ opt_b_label }}</span>
+            {% endif %}
+            <strong>{{ count_b }}人</strong>
         </div>
     </div>
 </div>
+
+<!-- 刺激参照ボタン（can_review の課題のみ表示） -->
+{% if can_review %}
+<div class="review-row">
+    <button type="button" class="review-btn" id="open-review">この問題の刺激をもう一度見る</button>
+</div>
+
+<!-- 刺激参照モーダル -->
+<div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">先ほどの刺激</span>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding:0;">
+                <div id="review-canvas-wrap"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- ② チャット -->
 <div class="nickname-line">
@@ -246,4 +299,8 @@ html, body {
         });
     }
 </script>
+
+<!-- 刺激参照ポップアップ（can_review の課題のみ動作）-->
+<script src="https://cdn.jsdelivr.net/npm/seedrandom@3.0.5/seedrandom.min.js"></script>
+<script type="text/javascript" src="{{ static 'dot_consensus/js/review_stim.js' }}"></script>
 {{ endblock }}

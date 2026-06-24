@@ -59,6 +59,9 @@ html, body {
 .btn-blue { color: #4499ff; }
 .btn-red.selected  { border-color: #ff4444; background: #1a0000; }
 .btn-blue.selected { border-color: #4499ff; background: #00091a; }
+/* 左右・区間（ガボール）用の中立色ボタン */
+.btn-neutral { color: #ddd; }
+.btn-neutral.selected { border-color: #e8e8e8; background: #222; }
 
 /* ── 確信度スケール ── */
 .conf-section {
@@ -152,17 +155,33 @@ html, body {
 <body oncontextmenu="return false;">
 <div class="page-wrapper">
 
-    <div class="question-text">どちらの色のドットが多かったですか？</div>
+    <div class="question-text">
+        {% if choice_type == "redblue" %}
+            どちらの色が多かったですか？
+        {% elif choice_type == "leftright" %}
+            ドットはどちらの方向に動いていましたか？
+        {% elif choice_type == "interval" %}
+            1枚目と2枚目、どちらにコントラストの異なる刺激がありましたか？
+        {% endif %}
+    </div>
 
     <form method="post" id="decision-form">
-        <!-- 選択ボタン（color_pos に応じて左右入れ替え） -->
+        <!-- 選択ボタン（choice_type で内容が変わる。color_pos で左右入れ替え） -->
         <div class="choice-row">
-            {% if color_pos == "redblue" %}
-            <div class="choice-btn btn-red" id="btn-red" onclick="selectChoice('red')">RED</div>
-            <div class="choice-btn btn-blue" id="btn-blue" onclick="selectChoice('blue')">BLUE</div>
-            {% else %}
-            <div class="choice-btn btn-blue" id="btn-blue" onclick="selectChoice('blue')">BLUE</div>
-            <div class="choice-btn btn-red" id="btn-red" onclick="selectChoice('red')">RED</div>
+            {% if choice_type == "redblue" %}
+                {% if color_pos == "redblue" %}
+                <div class="choice-btn btn-red"  id="btn-red"  onclick="selectChoice('red')">RED</div>
+                <div class="choice-btn btn-blue" id="btn-blue" onclick="selectChoice('blue')">BLUE</div>
+                {% else %}
+                <div class="choice-btn btn-blue" id="btn-blue" onclick="selectChoice('blue')">BLUE</div>
+                <div class="choice-btn btn-red"  id="btn-red"  onclick="selectChoice('red')">RED</div>
+                {% endif %}
+            {% elif choice_type == "leftright" %}
+                <div class="choice-btn btn-neutral" id="btn-left"  onclick="selectChoice('left')">LEFT</div>
+                <div class="choice-btn btn-neutral" id="btn-right" onclick="selectChoice('right')">RIGHT</div>
+            {% elif choice_type == "interval" %}
+                <div class="choice-btn btn-neutral" id="btn-first"  onclick="selectChoice('first')">FIRST</div>
+                <div class="choice-btn btn-neutral" id="btn-second" onclick="selectChoice('second')">SECOND</div>
             {% endif %}
         </div>
         <input type="hidden" name="decision1_choice" id="id_decision1_choice" value="">
@@ -195,11 +214,11 @@ html, body {
 const pageStart = performance.now();
 let choiceDone = false, confDone = false;
 
-function selectChoice(color) {
-    document.getElementById('id_decision1_choice').value = color;
-    document.getElementById('btn-red').classList.remove('selected');
-    document.getElementById('btn-blue').classList.remove('selected');
-    document.getElementById('btn-' + color).classList.add('selected');
+function selectChoice(value) {
+    document.getElementById('id_decision1_choice').value = value;
+    // 全選択ボタンの selected を外して、押されたものだけ付ける
+    document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('btn-' + value).classList.add('selected');
     choiceDone = true;
     maybeEnable();
 }

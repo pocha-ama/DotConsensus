@@ -3,6 +3,8 @@ import string, json, random
 from time import time
 import numpy as np
 from dot_consensus.experiment_settings import DOT2_CONSTANTS
+from dot_consensus.task_config import PILOT_TASKS
+from dot_consensus import stimulus_gen
 
 doc = 'Dot Consensus Experiment (Kuroda et al. 2025 stimulus x consensus loop)'
 
@@ -13,8 +15,8 @@ class C(BaseConstants):
     NUM_ROUNDS = 1000
 
     NUM_PRACTICE_TASKS = 1
-    NUM_NORMAL_TASKS = DOT2_CONSTANTS['NUM_ROUNDS']
-    NUM_ATTENTION_CHECKS = max(0, min(4, NUM_NORMAL_TASKS // 14))
+    NUM_NORMAL_TASKS = len(PILOT_TASKS)        # 12問のパイロット構成
+    NUM_ATTENTION_CHECKS = 0                    # パイロットではアテンションチェックなし
     NUM_REAL_TASKS = NUM_ATTENTION_CHECKS + NUM_NORMAL_TASKS
     TOTAL_TASKS = NUM_PRACTICE_TASKS + NUM_REAL_TASKS
 
@@ -49,60 +51,42 @@ class Player(BasePlayer):
     ## consensus check
     is_consensus = models.BooleanField(initial=False)
 
-# create stimulus
-def _generate_stimulus(answer: str, is_attention: bool = False) -> tuple:
-    if is_attention:
-        mean = 30 if answer == 'red' else -30
-    else:
-        mean = C.MEAN if answer == 'red' else -C.MEAN
-    diff_dots = np.random.normal(mean, C.SIGMA, C.FPS * C.TIME_LIMIT)
-    for i in range(len(diff_dots)):
-        if diff_dots[i] % 2 < 1:
-            diff_dots[i] = (diff_dots[i] // 2) * 2
-        else:
-            diff_dots[i] = (diff_dots[i] // 2) * 2 + 2
-    red_dots = (C.N_DOTS + diff_dots) / 2
-    n_red = json.dumps(list(red_dots.astype(np.float64)))
-    n_blue = json.dumps(list(C.N_DOTS - np.array(json.loads(n_red))))
-    seed = ''.join(random.sample(string.ascii_letters, 20))
-    return n_red, n_blue, seed
+# ── 刺激生成: 課題タイプ別にディスパッチ（stimulus_gen.py に委譲） ──────────────
+def _generate_stimulus(task: dict) -> dict:
+    """task（task_type を含む dict）に応じた刺激パラメータ dict を返す。"""
+    return stimulus_gen.generate_stimulus(task, C)
 
+
+# ── 練習問題の定義 ──────────────────────────────────────────────────────────
+#  パイロットでは練習をドット課題1問とする（参加者が操作に慣れるため）。
+PRACTICE_TASKS = [
+    dict(task_type='dot', choice_type='redblue', can_review=False, answer='red'),
+]
+
+
+# ── 出題順の生成: 練習 + 本番12問（PILOT_TASKS） ──────────────────────────────
+#  PILOT_TASKS は「ドット2→ガボール2→RDK4→avg4」という課題ブロック順序を
+#  そのまま用いる（課題タイプを比較する目的なのでブロック提示が自然）。
+#  セッション内で固定の順序を使う。
 def _generate_answer_sequence() -> list:
-    task_parameters = np.array([-1, -1, 1, 1])
     tasks = []
-    ## practice task
-    practice_answers = ['red', 'blue', 'red', 'blue']
-    for i in range(C.NUM_PRACTICE_TASKS):
+    # 練習問題
+    for i, pt in enumerate(PRACTICE_TASKS[:C.NUM_PRACTICE_TASKS]):
         tasks.append({
-            'question_id': i,
+            **pt,
+            'question_id': 0,            # 練習は question_id=0
             'task_index': i,
             'is_practice': True,
             'is_attention': False,
-            'answer': practice_answers[i % len(practice_answers)],
         })
-    ## real task
-    num_block = (C.NUM_NORMAL_TASKS + 3) // 4
-    rng_list = []
-    for _ in range(num_block):
-        rng_list += random.sample(range(4), 4)
-    rng_list = rng_list[:C.NUM_NORMAL_TASKS]
-    for i in range(C.NUM_ATTENTION_CHECKS):
-        rng_list.insert(13 + i * 14, 99)
-    attn_count = 0
-    for i in range(C.NUM_REAL_TASKS):
-        val = rng_list[i]
-        is_attention = (val == 99)
-        if is_attention:
-            answer = 'red' if attn_count % 2 == 0 else 'blue'
-            attn_count += 1
-        else:
-            answer = 'red' if task_parameters[val] == -1 else 'blue'
+    # 本番問題（PILOT_TASKS をそのままの順序で）
+    for j, pt in enumerate(PILOT_TASKS):
         tasks.append({
-            'question_id': C.NUM_PRACTICE_TASKS + i,
-            'task_index': C.NUM_PRACTICE_TASKS + i,
+            **pt,
+            'question_id': j + 1,        # 本番は 1..12
+            'task_index': C.NUM_PRACTICE_TASKS + j,
             'is_practice': False,
-            'is_attention': is_attention,
-            'answer': answer,
+            'is_attention': False,
         })
     return tasks
 
@@ -119,8 +103,8 @@ def creating_session(subsession):
             players = g.get_players()
             group_tasks = []
             for info in answer_sequence:
-                n_red, n_blue, seed = _generate_stimulus(info['answer'], info.get('is_attention', False))
-                group_tasks.append({**info, 'n_red': n_red, 'n_blue': n_blue, 'seed': seed})
+                stim = _generate_stimulus(info)
+                group_tasks.append({**info, **stim})
             for order_id, task in enumerate(group_tasks, start=1):
                 task['order_id'] = order_id
             gkey = f'group_{g.id_in_subsession}_tasks'
@@ -247,25 +231,58 @@ class StartReal(Page):
 
 
 # ITI + trial
+# 刺激描画用 js_vars を課題タイプ別に組み立てる共通ヘルパー
+#  Task ページと（参照可能な課題の）Chat ポップアップの両方で使う。
+def _stim_js_vars(player: Player, task: dict) -> dict:
+    base = dict(
+        task_type   = task['task_type'],
+        choice_type = task['choice_type'],
+        color_pos   = player.participant.color_pos,
+        seed        = task.get('seed', ''),
+        fps         = C.FPS,
+        time_limit  = C.TIME_LIMIT,
+    )
+    t = task['task_type']
+    if t == 'dot':
+        base.update(
+            n_dots = C.N_DOTS,
+            n_red  = task.get('n_red', '[]'),
+            n_blue = task.get('n_blue', '[]'),
+        )
+    elif t == 'gabor':
+        base.update(
+            oddball_interval = task.get('oddball_interval', 1),
+            oddball_position = task.get('oddball_position', 0),
+            oddball_contrast = task.get('oddball_contrast', 3.5),
+            base_contrast    = task.get('base_contrast', 10.0),
+            n_patches        = task.get('n_patches', 6),
+        )
+    elif t == 'rdk':
+        base.update(
+            direction  = task.get('direction', 'right'),
+            coherence  = task.get('coherence', 10.0),
+            n_dots     = task.get('n_dots', 200),
+            dot_radius = task.get('dot_radius', 2),
+            dot_speed  = task.get('dot_speed', 2),
+        )
+    elif t == 'avg':
+        base.update(
+            colors     = task.get('colors', '[]'),
+            n_elements = task.get('n_elements', 8),
+        )
+    return base
+
+
 class Task(Page):
     form_model = 'player'
     form_fields = ['taskdata']
-    timeout_seconds = C.TIME_LIMIT
     ## Pass the coherence and answer to the JavaScript file
     @staticmethod
     def is_displayed(player: Player):
         return _is_new_task(player)
     @staticmethod
     def js_vars(player: Player):
-        task = _current_task(player)
-        return dict(
-            fps = C.FPS,
-            color_pos = player.participant.color_pos,
-            n_dots = C.N_DOTS,
-            n_red = task['n_red'],
-            n_blue = task['n_blue'],
-            seed = task['seed']
-        )
+        return _stim_js_vars(player, _current_task(player))
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
         if player.taskdata:
@@ -293,11 +310,13 @@ class Decision1(Page):
             num_real     = C.NUM_REAL_TASKS,
             color_pos    = player.participant.color_pos,
             iteration    = _iteration_num(player),
+            choice_type  = task['choice_type'],
+            task_type    = task['task_type'],
         )
     @staticmethod
     def error_message(player: Player, values):
         if not values.get('decision1_choice'):
-            return 'どちらかの色を選択してください。'
+            return '選択肢のいずれかを選んでください。'
         if values.get('decision1_confidence') is None:
             return '自信の程度を選択してください。'
     @staticmethod
@@ -344,6 +363,7 @@ class Chat(Page):
     @staticmethod
     def vars_for_template(player: Player):
         idx = player.participant.vars['current_task_index']
+        task = _current_task(player)
         nickname = player.participant.vars['nickname_map'].get(idx, '匿名')
         decisions = []
         for p in player.group.get_players():
@@ -354,24 +374,74 @@ class Chat(Page):
                 'confidence': p.participant.vars.get('last_confidence'),
                 'is_me': p.id_in_group == player.id_in_group,
             })
-        count_red = sum(1 for d in decisions if d['choice'] == 'red')
-        count_blue = sum(1 for d in decisions if d['choice'] == 'blue')
+        # choice_type に応じた2択ラベルと集計
+        ctype = task['choice_type']
+        if ctype == 'redblue':
+            opt_a, opt_b = 'red', 'blue'
+        elif ctype == 'leftright':
+            opt_a, opt_b = 'left', 'right'
+        else:  # interval
+            opt_a, opt_b = 'first', 'second'
+        count_a = sum(1 for d in decisions if d['choice'] == opt_a)
+        count_b = sum(1 for d in decisions if d['choice'] == opt_b)
+        # 表示ラベル（choice_type ごと）
+        label_map = {
+            'red': 'RED', 'blue': 'BLUE',
+            'left': 'LEFT', 'right': 'RIGHT',
+            'first': 'FIRST', 'second': 'SECOND',
+        }
+        my_choice_raw = player.participant.vars.get('latest_choice', '')
         return dict(
             nickname = nickname,
-            my_choice = player.participant.vars.get('latest_choice', ''),
+            my_choice = my_choice_raw,
+            my_choice_label = label_map.get(my_choice_raw, '—'),
             decisions = decisions,
             decisions_json = json.dumps(decisions),
-            count_red = count_red,
-            count_blue = count_blue,
+            choice_type = ctype,
+            opt_a = opt_a, opt_b = opt_b,
+            opt_a_label = label_map.get(opt_a, opt_a),
+            opt_b_label = label_map.get(opt_b, opt_b),
+            count_a = count_a, count_b = count_b,
+            # 後方互換（テンプレートが count_red/count_blue を参照している場合）
+            count_red = count_a if ctype == 'redblue' else 0,
+            count_blue = count_b if ctype == 'redblue' else 0,
+            can_review = task.get('can_review', False),
+            task_type = task['task_type'],
             chat_timeout = C.CHAT_TIMEOUT,
             is_practice = _is_practice(player),
             iteration = _iteration_num(player),
         )
     @staticmethod
+    def js_vars(player: Player):
+        task = _current_task(player)
+        # 参照可能な課題のみ刺激パラメータを渡す（参照不可なら最小限）
+        if task.get('can_review', False):
+            v = _stim_js_vars(player, task)
+            v['can_review'] = True
+            return v
+        return dict(can_review=False, task_type=task['task_type'])
+    @staticmethod
     def before_next_page(player: Player, timeout_happened):
         player.participant.vars['page_start_time'] = time()
 
-# Decision 2 (after chat)
+class PreTask2(Page):
+    @staticmethod
+    def is_displayed(player: Player):
+        return _active(player) and not _is_practice(player)
+
+class Task2(Page):
+    form_model = 'player'
+    form_fields = ['taskdata']
+    @staticmethod
+    def is_displayed(player: Player):
+        return _active(player) and not _is_practice(player)
+    @staticmethod
+    def js_vars(player: Player):
+        return _stim_js_vars(player, _current_task(player))
+    @staticmethod
+    def before_next_page(player: Player, timeout_happened):
+        player.participant.vars['page_start_time'] = time()
+
 class Decision2(Page):
     form_model  = 'player'
     form_fields = ['decision2_choice', 'decision2_confidence', 'decision2_rt_ms']
@@ -380,14 +450,17 @@ class Decision2(Page):
         return _active(player) and not _is_practice(player)
     @staticmethod
     def vars_for_template(player: Player):
+        task = _current_task(player)
         return dict(
-            color_pos = player.participant.color_pos,
-            iteration = _iteration_num(player),
+            color_pos   = player.participant.color_pos,
+            iteration   = _iteration_num(player),
+            choice_type = task['choice_type'],
+            task_type   = task['task_type'],
         )
     @staticmethod
     def error_message(player: Player, values):
         if not values.get('decision2_choice'):
-            return 'どちらかの色を選択してください。'
+            return '選択肢のいずれかを選んでください。'
         if values.get('decision2_confidence') is None:
             return '自信の程度を選択してください。'
     @staticmethod
@@ -456,10 +529,11 @@ class Consensus(Page):
         decision = player.participant.vars.get(f'decision_making_round_{player.round_number}', '')
         is_correct = decision == task['answer']
         return dict(
-            decision = decision,
-            answer = task['answer'],
-            is_correct = is_correct,
-            n_iters = _iteration_num(player),
+            decision    = decision,
+            answer      = task['answer'],
+            is_correct  = is_correct,
+            n_iters     = _iteration_num(player),
+            choice_type = task['choice_type'],   # ← 追加
         )
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
@@ -502,6 +576,8 @@ page_sequence = [
     Decision1,
     Wait_Chat,
     Chat,
+    PreTask2,
+    Task2,
     Decision2,
     Wait_Decision,
     Consensus,
@@ -516,6 +592,9 @@ def custom_export(players):
         'participant_code', 'session_code', 'time_started_utc',
         'question_id',
         'order_id',
+        'task_type',
+        'choice_type',
+        'can_review',
         'answer',
         'is_practice',
         'is_attention',
@@ -528,7 +607,8 @@ def custom_export(players):
     for p in players:
         if p.round_number != C.NUM_ROUNDS:
             continue
-        tasks = p.participant.vars.get('all_tasks', [])
+        key = p.participant.vars.get('group_task_key', '')
+        tasks = p.session.vars.get(key, [])
         for idx, task in enumerate(tasks):
             choices = p.participant.vars.get(f'choice_task{idx}', [])
             for entry in choices:
@@ -538,6 +618,9 @@ def custom_export(players):
                     p.participant.time_started_utc,
                     task.get('question_id', idx),
                     task.get('order_id',    idx + 1),
+                    task.get('task_type', ''),
+                    task.get('choice_type', ''),
+                    task.get('can_review', False),
                     task.get('answer', ''),
                     task.get('is_practice',  False),
                     task.get('is_attention', False),

@@ -1,0 +1,62 @@
+{{ block title }}{{ endblock }}
+
+{{ block styles }}
+<style>
+html, body {
+    background: #000;
+    color: #e8e8e8;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin: 0; padding: 0;
+}
+.otree-timer { display: none !important; }
+.page-wrapper {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 9999;
+    padding: 40px 20px;
+}
+.message {
+    font-size: 18px;
+    color: #ccc;
+    line-height: 1.9;
+    margin-bottom: 48px;
+}
+.message strong {
+    color: #e8e8e8;
+}
+</style>
+{{ endblock }}
+
+{{ block content }}
+<body oncontextmenu="return false;">
+<div class="page-wrapper">
+    <div class="message">
+        では改めて、先ほどの刺激をお見せします。<br>
+        <br>
+        <strong>準備ができたら、スペースキーを押してください。</strong>
+    </div>
+</div>
+</body>
+{{ endblock }}
+
+{{ block scripts }}
+<script>
+    function submitForm() {
+        var form = document.getElementById('form')
+                || document.getElementById('otree-form')
+                || document.querySelector('form');
+        if (form) form.submit();
+    }
+
+    document.addEventListener('keypress', function(e) {
+        if (e.code === 'Space') {
+            submitForm();
+        }
+    });
+</script>
+{{ endblock }}

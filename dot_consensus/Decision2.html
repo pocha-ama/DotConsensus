@@ -75,6 +75,8 @@ html, body {
 .btn-blue { color: #4499ff; }
 .btn-red.selected  { border-color: #ff4444; background: #1a0000; }
 .btn-blue.selected { border-color: #4499ff; background: #00091a; }
+.btn-neutral { color: #ddd; }
+.btn-neutral.selected { border-color: #e8e8e8; background: #222; }
 
 /* ── 確信度 ── */
 .conf-section {
@@ -149,16 +151,20 @@ html, body {
 
     <form method="post" id="decision2-form">
         <div class="choice-row">
-            {% if color_pos == "redblue" %}
-            <div class="choice-btn btn-red" id="btn2-red"
-                 onclick="selectChoice2('red')">RED</div>
-            <div class="choice-btn btn-blue" id="btn2-blue"
-                 onclick="selectChoice2('blue')">BLUE</div>
-            {% else %}
-            <div class="choice-btn btn-blue" id="btn2-blue"
-                 onclick="selectChoice2('blue')">BLUE</div>
-            <div class="choice-btn btn-red" id="btn2-red"
-                 onclick="selectChoice2('red')">RED</div>
+            {% if choice_type == "redblue" %}
+                {% if color_pos == "redblue" %}
+                <div class="choice-btn btn-red"  id="btn2-red"  onclick="selectChoice2('red')">RED</div>
+                <div class="choice-btn btn-blue" id="btn2-blue" onclick="selectChoice2('blue')">BLUE</div>
+                {% else %}
+                <div class="choice-btn btn-blue" id="btn2-blue" onclick="selectChoice2('blue')">BLUE</div>
+                <div class="choice-btn btn-red"  id="btn2-red"  onclick="selectChoice2('red')">RED</div>
+                {% endif %}
+            {% elif choice_type == "leftright" %}
+                <div class="choice-btn btn-neutral" id="btn2-left"  onclick="selectChoice2('left')">LEFT</div>
+                <div class="choice-btn btn-neutral" id="btn2-right" onclick="selectChoice2('right')">RIGHT</div>
+            {% elif choice_type == "interval" %}
+                <div class="choice-btn btn-neutral" id="btn2-first"  onclick="selectChoice2('first')">FIRST</div>
+                <div class="choice-btn btn-neutral" id="btn2-second" onclick="selectChoice2('second')">SECOND</div>
             {% endif %}
         </div>
         <input type="hidden" name="decision2_choice" id="id_decision2_choice" value="">
@@ -191,11 +197,10 @@ html, body {
 const pageStart2 = performance.now();
 let choice2Done = false, conf2Done = false;
 
-function selectChoice2(color) {
-    document.getElementById('id_decision2_choice').value = color;
-    document.getElementById('btn2-red').classList.remove('selected');
-    document.getElementById('btn2-blue').classList.remove('selected');
-    document.getElementById('btn2-' + color).classList.add('selected');
+function selectChoice2(value) {
+    document.getElementById('id_decision2_choice').value = value;
+    document.querySelectorAll('.choice-row .choice-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('btn2-' + value).classList.add('selected');
     choice2Done = true;
     maybeEnable2();
 }

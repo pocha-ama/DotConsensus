@@ -57,8 +57,14 @@ html, body {
 
     <div class="consensus-label">全員の意見が一致しました</div>
 
-    <div class="final-choice {% if decision == 'red' %}red{% else %}blue{% endif %}">
-        {% if decision == "red" %}RED{% else %}BLUE{% endif %}
+    <div class="final-choice {% if choice_type == 'redblue' %} {% if decision == 'red' %}red{% else %}blue{% endif %} {% endif %}">
+        {% if choice_type == 'redblue' %}
+            {% if decision == 'red' %}RED{% else %}BLUE{% endif %}
+        {% elif choice_type == 'leftright' %}
+            {% if decision == 'left' %}LEFT{% else %}RIGHT{% endif %}
+        {% elif choice_type == 'interval' %}
+            {% if decision == 'first' %}FIRST{% else %}SECOND{% endif %}
+        {% endif %}
     </div>
 
     <form method="post">

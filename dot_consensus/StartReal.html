@@ -12,12 +12,12 @@
 
 {{ block content }}
     {% if is_practice_ending %}
-    <p>以上で練習問題は終了です。次のページから、本番の問題（第{{ task_num }}問；全{{ num_real }}問）が始まります。</p>
+    <p>これから、第{{ task_num }}問（全{{ num_real }}問）を始めます。</p>
     {% else %}
     <p>これから、第{{ task_num }}問（全{{ num_real }}問）を始めます。</p>
     {% endif %}
     <br>
-    <p><b>準備ができたら、スペースキーを押して問題を開始してください。</b></p>
+    <p><b>実験者の指示があるまでお待ちください。</b></p>
 {{ endblock }}
 
 {{ block scripts }}
