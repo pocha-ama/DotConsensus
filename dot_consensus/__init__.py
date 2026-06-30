@@ -74,20 +74,34 @@ def _generate_answer_sequence() -> list:
     for i, pt in enumerate(PRACTICE_TASKS[:C.NUM_PRACTICE_TASKS]):
         tasks.append({
             **pt,
-            'question_id': 0,            # 練習は question_id=0
+            'question_id': 0,
             'task_index': i,
             'is_practice': True,
             'is_attention': False,
         })
-    # 本番問題（PILOT_TASKS をそのままの順序で）
-    for j, pt in enumerate(PILOT_TASKS):
-        tasks.append({
-            **pt,
-            'question_id': j + 1,        # 本番は 1..12
-            'task_index': C.NUM_PRACTICE_TASKS + j,
-            'is_practice': False,
-            'is_attention': False,
-        })
+    # 本番問題
+    if len(PILOT_TASKS) > 0:
+        tasks_with_qid = []
+        for j, pt in enumerate(PILOT_TASKS):
+            tasks_with_qid.append({
+                **pt,
+                'question_id': j + 1,
+                'task_index': C.NUM_PRACTICE_TASKS + j,
+                'is_practice': False,
+                'is_attention': False,
+            })
+        grouped_by_type = {}
+        for task in tasks_with_qid:
+            task_type = task['task_type']
+            if task_type not in grouped_by_type:
+                grouped_by_type[task_type] = []
+            grouped_by_type[task_type].append(task)
+        for task_type in grouped_by_type:
+            random.shuffle(grouped_by_type[task_type])
+        task_types = list(grouped_by_type.keys())
+        random.shuffle(task_types)
+        for task_type in task_types:
+            tasks.extend(grouped_by_type[task_type])
     return tasks
 
 # session initialization
@@ -213,12 +227,19 @@ class StartReal(Page):
         idx = player.participant.vars['current_task_index']
         if _is_practice(player):
             next_real_num = 1
+            next_task_idx = idx + 1
+            tasks = _get_tasks(player)
+            next_task = tasks[next_task_idx] if next_task_idx < len(tasks) else {}
+            task_type = next_task.get('task_type', 'unknown')
         else:
             next_real_num = idx - C.NUM_PRACTICE_TASKS + 1
+            task = _current_task(player)
+            task_type = task.get('task_type', 'unknown')
         return dict(
             task_num           = next_real_num,
             num_real           = C.NUM_REAL_TASKS,
             is_practice_ending = _is_practice(player),
+            task_type          = task_type,
         )
 
     @staticmethod
@@ -593,10 +614,8 @@ def custom_export(players):
         'question_id',
         'order_id',
         'task_type',
-        'choice_type',
         'can_review',
         'answer',
-        'is_practice',
         'is_attention',
         'time_step',
         'choice',
@@ -605,28 +624,25 @@ def custom_export(players):
         'time_spent_ms',
     ]
     for p in players:
-        if p.round_number != C.NUM_ROUNDS:
-            continue
-        key = p.participant.vars.get('group_task_key', '')
-        tasks = p.session.vars.get(key, [])
-        for idx, task in enumerate(tasks):
-            choices = p.participant.vars.get(f'choice_task{idx}', [])
-            for entry in choices:
-                yield [
-                    p.participant.code,
-                    p.session.code,
-                    p.participant.time_started_utc,
-                    task.get('question_id', idx),
-                    task.get('order_id',    idx + 1),
-                    task.get('task_type', ''),
-                    task.get('choice_type', ''),
-                    task.get('can_review', False),
-                    task.get('answer', ''),
-                    task.get('is_practice',  False),
-                    task.get('is_attention', False),
-                    entry['time_step'],
-                    entry['choice'],
-                    entry['true_false'],
-                    entry['confidence'],
-                    entry.get('time_spent_ms', ''),
-                ]
+        if p.round_number == 1:
+            key = p.participant.vars.get('group_task_key', '')
+            tasks = p.session.vars.get(key, [])
+            for idx, task in enumerate(tasks):
+                choices = p.participant.vars.get(f'choice_task{idx}', [])
+                for entry in choices:
+                    yield [
+                        p.participant.code,
+                        p.session.code,
+                        p.participant.time_started_utc,
+                        task.get('question_id', idx),
+                        task.get('order_id',    idx + 1),
+                        task.get('task_type', ''),
+                        task.get('can_review', False),
+                        task.get('answer', ''),
+                        task.get('is_attention', False),
+                        entry['time_step'],
+                        entry['choice'],
+                        entry['true_false'],
+                        entry['confidence'],
+                        entry.get('time_spent_ms', ''),
+                    ]

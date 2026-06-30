@@ -12,9 +12,9 @@
 
 {{ block content }}
     {% if is_practice_ending %}
-    <p>これから、第{{ task_num }}問（全{{ num_real }}問）を始めます。</p>
+    <p>これから、第{{ task_num }}問（全{{ num_real }}問；{{ task_type }}）を始めます。</p>
     {% else %}
-    <p>これから、第{{ task_num }}問（全{{ num_real }}問）を始めます。</p>
+    <p>これから、第{{ task_num }}問（全{{ num_real }}問；{{ task_type }}）を始めます。</p>
     {% endif %}
     <br>
     <p><b>実験者の指示があるまでお待ちください。</b></p>
